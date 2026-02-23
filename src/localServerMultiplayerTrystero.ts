@@ -26,13 +26,13 @@ let trysteroRoom: Room | undefined
 let trysteroRoomId: string | undefined
 
 export const getJoinLinkTrystero = () => {
-  if (!trysteroRoomId) return
+  if (!trysteroRoomId || !localServer) return
   const url = new URL(window.location.href)
   for (const key of url.searchParams.keys()) {
     url.searchParams.delete(key)
   }
   url.searchParams.set('connectPeer', trysteroRoomId)
-  url.searchParams.set('peerVersion', localServer!.options.version)
+  url.searchParams.set('peerVersion', localServer.options.version)
   url.searchParams.set('peerEngine', 'trystero')
   return url.toString()
 }
