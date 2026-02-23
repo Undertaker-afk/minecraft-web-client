@@ -62,6 +62,7 @@ import defaultServerOptions from './defaultLocalServerOptions'
 
 import { onAppLoad, resourcepackReload, resourcePackState } from './resourcePack'
 import { ConnectPeerOptions, connectToPeer } from './localServerMultiplayer'
+import { connectToPeerTrystero } from './localServerMultiplayerTrystero'
 import CustomChannelClient from './customClient'
 import { registerServiceWorker } from './serviceWorker'
 import { appStatusState, quickDevReconnect } from './react/AppStatusProvider'
@@ -564,7 +565,11 @@ export async function connect (connectOptions: ConnectOptions) {
     }
 
     if (p2pMultiplayer) {
-      clientDataStream = await connectToPeer(connectOptions.peerId!, connectOptions.peerOptions)
+      if (connectOptions.peerEngine === 'trystero') {
+        clientDataStream = await connectToPeerTrystero(connectOptions.peerId!)
+      } else {
+        clientDataStream = await connectToPeer(connectOptions.peerId!, connectOptions.peerOptions)
+      }
     }
     if (connectOptions.viewerWsConnect) {
       const { version, time, requiresPass } = await getViewerVersionData(connectOptions.viewerWsConnect)
@@ -1111,6 +1116,7 @@ const maybeEnterGame = () => {
     if (appQueryParams.server) {
       peerOptions.server = appQueryParams.server
     }
+    const peerEngine = appQueryParams.peerEngine === 'trystero' ? 'trystero' : 'peerjs'
     const version = appQueryParams.peerVersion
     let username: string | null = options.guestUsername
     if (options.askGuestName) username = prompt('Enter your username to connect to peer', username)
@@ -1120,7 +1126,8 @@ const maybeEnterGame = () => {
       username,
       botVersion: version || undefined,
       peerId,
-      peerOptions
+      peerOptions,
+      peerEngine
     })
     return
 

@@ -32,6 +32,7 @@ export type AppQsParams = {
   // Peer connection params
   connectPeer?: string
   peerVersion?: string
+  peerEngine?: string
   // UI params
   modal?: string
   viewerConnect?: string
