@@ -18,6 +18,7 @@ export type ConnectOptions = {
   serverOverrides?
   serverOverridesFlat?
   peerId?: string
+  peerEngine?: 'peerjs' | 'trystero'
   ignoreQs?: boolean
   onSuccessfulPlay?: () => void
   serverIndex?: string

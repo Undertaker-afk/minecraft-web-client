@@ -21,6 +21,7 @@ import { disconnect } from '../flyingSquidUtils'
 import { openGithub, pointerLock } from '../utils'
 import { setLoadingScreenStatus, lastConnectOptions } from '../appStatus'
 import { closeWan, openToWanAndCopyJoinLink, getJoinLink } from '../localServerMultiplayer'
+import { closeWanTrystero, openToWanAndCopyJoinLinkTrystero, getJoinLinkTrystero } from '../localServerMultiplayerTrystero'
 import { collectFilesToCopy, fileExistsAsyncOptimized, mkdirRecursive, uniqueFileNameFromWorldName } from '../browserfs'
 import { appQueryParams } from '../appParams'
 import { downloadPacketsReplay, packetsRecordingState } from '../packetsReplay/packetsReplayLegacy'
@@ -186,7 +187,7 @@ export default () => {
   const clickWebShareButton = async () => {
     if (!wanOpened) return
     try {
-      const url = getJoinLink()
+      const url = getJoinLinkTrystero() ?? getJoinLink()
       const shareData = { url }
       await navigator.share?.(shareData)
     } catch (err) {
@@ -196,17 +197,30 @@ export default () => {
 
   const clickJoinLinkButton = async (qr = false) => {
     if (!qr && wanOpened) {
-      closeWan()
+      if (getJoinLinkTrystero()) {
+        closeWanTrystero()
+      } else {
+        closeWan()
+      }
       return
     }
     if (!wanOpened || !qr) {
-      await openToWanAndCopyJoinLink((err) => {
-        if (!miscUiState.wanOpening) return
-        alert(`Something went wrong: ${err}`)
-      }, !qr)
+      const engine = await showOptionsModal('Select P2P Engine', ['PeerJS', 'Trystero (via Nostr)'])
+      if (!engine) return
+      if (engine === 'Trystero (via Nostr)') {
+        await openToWanAndCopyJoinLinkTrystero((err) => {
+          if (!miscUiState.wanOpening) return
+          alert(`Something went wrong: ${err}`)
+        }, !qr)
+      } else {
+        await openToWanAndCopyJoinLink((err) => {
+          if (!miscUiState.wanOpening) return
+          alert(`Something went wrong: ${err}`)
+        }, !qr)
+      }
     }
     if (qr) {
-      const joinLink = getJoinLink()
+      const joinLink = getJoinLinkTrystero() ?? getJoinLink()
       miscUiState.currentDisplayQr = joinLink ?? null
     }
   }
